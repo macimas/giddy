@@ -3,15 +3,17 @@ minor tweaks to GitHub + style your GitHub profiles with CSS visible to others!
 
 ![image](https://github.com/user-attachments/assets/49903264-f173-43d8-8ab6-56536f4e8b92)
 
+this readme is a bit h, lmk how to improve it lol
 
 ## Installation
-TODO: actually make it available
+to install, you'll need a userscript manager. preferably [Tampermonkey](https://www.tampermonkey.net), but you may use any managers that implement `GM` functions
 
-to install, you'll need a userscript manager. preferably Tampermonkey, but you may use any managers that implement `GM` functions
-
+once you've installed and setup your userscript manager, [click this link](https://github.com/macimas/giddy/blob/main/giddy.user.js?raw=true) for install prompt
 
 ## Features
-there's nothing much. it just tweaks profile page a bit and lets you style your profile.
+
+- apply custom css to your profile page where anyone with the script can also see
+- additional tweaks & improvements to profile page, with an additional bonus of being able to make simple custom css while worrying less about how it looks
 
 if you want to disable profile CSS, you may do so by checking your manager's menu
 
@@ -62,3 +64,4 @@ here's some rough guidelines when creating your css. it probably has issues but 
     ```
 4. make sure that text can be clearly read
 5. make sure your css works in dark and light mode
+6. dont make it too overwhelming/uncomfortable to look at
