@@ -9,7 +9,7 @@
 // @match        https://github.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=github.com
 
-// @run-at       document-end
+// @run-at       document-start
 
 // @grant        unsafeWindow
 // @grant        window.onurlchange
@@ -17,11 +17,21 @@
 // @grant        GM_unregisterMenuCommand
 // ==/UserScript==
 
-function getCookieCrumb(id) {
-	return document.cookie
+function getCookieCrumb(id, options = {}) {
+	let value = document.cookie
 		.split("; ")
 		.find((crumb) => crumb.startsWith(id + "="))
 		?.split("=")[1];
+
+	if (!value) return null;
+
+	value = decodeURIComponent(value);
+
+	if (options.json) {
+		value = JSON.parse(value);
+	}
+
+	return value;
 }
 
 function htemplate(layout) {
@@ -76,6 +86,50 @@ function htemplate(layout) {
 
 	return result;
 }
+
+/*
+== the main stuff
+*/
+
+(function(){
+/*
+	.dark-mode                      Dark mode
+
+		.theme-dark                 Dark default
+		.theme-dark-high-contrast   Dark high contrast
+		.theme-dark-colorblind      Dark Protanopia & Deuteranopia
+		.theme-dark-tritanopia      Dark Tritanopia
+		.theme-dark-dimmed          Dark dimmed
+
+	.light-mode                     Light mode
+
+		.theme-light                Light default
+		.theme-light-high-contrast  Light high contrast
+		.theme-light-colorblind     Light Protanopia & Deuteranopia
+		.theme-light-tritanopia     Light Tritanopia
+*/
+
+	const data = getCookieCrumb("color_mode", { json: true });
+	const prefers_dark = (getCookieCrumb("preferred_color_mode") == "dark");
+	const color_mode = data.color_mode;
+
+	let theme;
+	const classes = [];
+
+	if ((color_mode == "auto" && prefers_dark) || (color_mode == "dark")) {
+		theme = "dark_theme";
+	}
+
+	if ((color_mode == "auto" && !prefers_dark) || (color_mode == "light")) {
+		theme = "light_theme";
+	}
+
+	classes.push(data[theme].color_mode + "-mode");
+	classes.push("theme-" + data[theme].name.replaceAll("_", "-"));
+
+	console.log(classes);
+	document.documentElement.classList.add(...classes);
+})();
 
 const profile_css = htemplate([
 	["style", {
@@ -234,10 +288,10 @@ footer.footer::before {
 		`)
 	}]
 ]);
+// general_css.innerText = null;
 
 document.documentElement.append(profile_css);
 document.documentElement.append(general_css);
-//general_css.innerText = null;
 
 let giddy_profile_css_enabled = JSON.parse(localStorage.giddy_profile_css_enabled || null) ?? true;
 let last_username;
@@ -249,12 +303,9 @@ function toggleGiddy() {
 }
 
 function buildMenu() {
-	const text = (giddy_profile_css_enabled)
-		? "Disable"
-		: "Enable"
+	const text = (giddy_profile_css_enabled) ? "Disable" : "Enable"
 
 	GM_unregisterMenuCommand("toggle_giddy");
-
 	GM_registerMenuCommand(`${text} profile CSS`, toggleGiddy, {
 		id: "toggle_giddy"
 	});
@@ -281,7 +332,6 @@ async function addProfileCSS(event) {
 
 	if (last_username == username) return;
 	last_username = username;
-
 	profile_css.innerHTML = null;
 
 	const fetch_data_url = `https://raw.githubusercontent.com/macimas/giddy/main/index/${username}`;
