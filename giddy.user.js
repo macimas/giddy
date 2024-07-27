@@ -88,10 +88,15 @@ function htemplate(layout) {
 }
 
 /*
-== the main stuff
+==
 */
 
-(function(){
+// TODO: change classes when switching mode and theme
+
+const html = document.documentElement;
+let html_classes = [];
+
+function addHelperClasses() {
 /*
 	.dark-mode                      Dark mode
 
@@ -128,8 +133,37 @@ function htemplate(layout) {
 	classes.push("theme-" + data[theme].name.replaceAll("_", "-"));
 
 	console.log(classes);
-	document.documentElement.classList.add(...classes);
-})();
+	html.classList.add(...classes);
+}
+
+function observeTheme(list) {
+	const attributes = [
+		"data-color-mode",
+		"data-dark-theme",
+		"data-light-theme"
+	];
+
+	for (const item of list) {
+		const attribute = item.attributeName;
+
+		if (attribute == "class") {
+			if (html.attributes.class?.value) return;
+			addHelperClasses();
+			return;
+		}
+	}
+}
+
+new MutationObserver(observeTheme)
+	.observe(document.documentElement, { attributeOldValue: true });
+
+addHelperClasses()
+
+unsafeWindow.addHelperClasses = addHelperClasses;
+
+/*
+==
+*/
 
 const profile_css = htemplate([
 	["style", {
